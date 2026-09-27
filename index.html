@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UnitShift — Free Online Unit Converter | Length, Weight, Temperature, Data & Cooking</title>
+<meta name="description" content="UnitShift is a free online unit converter with a retro instrument-panel feel. Convert length, weight, temperature, area, volume, speed and data units (MB vs MiB explained), plus a cooking mode that converts cups to grams for 14 ingredients. No signup, unlimited free usage.">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  :root { --orange: #F97316; }
+  body { background: #0B1220; }
+  .chassis {
+    background:
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.015) 0 2px, transparent 2px 4px),
+      linear-gradient(160deg, #243349 0%, #1E293B 45%, #162032 100%);
+    border: 1px solid rgba(249,115,22,0.25);
+    box-shadow: 0 0 0 1px #0B1220, 0 0 42px rgba(249,115,22,0.10), inset 0 1px 0 rgba(255,255,255,0.06);
+  }
+  .screw { position:absolute; width:14px; height:14px; border-radius:9999px;
+    background: radial-gradient(circle at 35% 30%, #64748B, #1E293B 70%);
+    box-shadow: inset 0 1px 2px rgba(0,0,0,.8), 0 1px 0 rgba(255,255,255,.06); }
+  .screw::after { content:''; position:absolute; left:2px; right:2px; top:50%; height:2px; margin-top:-1px;
+    background:#0B1220; transform: rotate(38deg); border-radius:2px; }
+  .led { background:#0A0F1A; border:1px solid rgba(249,115,22,0.35);
+    box-shadow: inset 0 2px 10px rgba(0,0,0,.85), inset 0 -1px 0 rgba(249,115,22,.08); }
+  .led-text { color:#FBBF24; text-shadow:0 0 8px rgba(249,115,22,.75); }
+  .engraved { color:#CBD5E1; text-shadow:0 -1px 0 rgba(0,0,0,.9), 0 1px 0 rgba(255,255,255,.05); letter-spacing:.25em; }
+  .pushbtn { background:linear-gradient(180deg,#2E3E58,#1A2436); border:1px solid #0B1220;
+    box-shadow:0 2px 0 #0B1220, inset 0 1px 0 rgba(255,255,255,.08); color:#94A3B8; transition:all .12s ease; }
+  .pushbtn:hover { color:#E2E8F0; }
+  .pushbtn:active { transform:translateY(2px); box-shadow:0 0 0 #0B1220, inset 0 2px 6px rgba(0,0,0,.6); }
+  .pushbtn.on { color:#FDBA74; border-color:rgba(249,115,22,.7);
+    box-shadow:0 0 14px rgba(249,115,22,.35), inset 0 0 12px rgba(249,115,22,.15);
+    background:linear-gradient(180deg,#3A2A1C,#241a12); }
+  .pushbtn.on .dot { background:#F97316; box-shadow:0 0 8px #F97316; }
+  .dot { width:8px; height:8px; border-radius:9999px; background:#475569; transition:all .12s ease; }
+  .knob { background:radial-gradient(circle at 35% 30%, #475569, #1E293B 55%, #0B1220 100%);
+    border:2px solid rgba(249,115,22,.55);
+    box-shadow:0 4px 0 #05080F, 0 0 20px rgba(249,115,22,.25), inset 0 2px 4px rgba(255,255,255,.12);
+    transition:transform .15s ease; }
+  .knob:hover { box-shadow:0 4px 0 #05080F, 0 0 28px rgba(249,115,22,.45), inset 0 2px 4px rgba(255,255,255,.12); }
+  .knob:active { transform:translateY(3px) rotate(180deg); box-shadow:0 1px 0 #05080F, 0 0 24px rgba(249,115,22,.4); }
+  .tickring { background:repeating-conic-gradient(rgba(249,115,22,.5) 0 2deg, transparent 2deg 30deg);
+    -webkit-mask: radial-gradient(circle, transparent 58%, #000 59%); mask: radial-gradient(circle, transparent 58%, #000 59%); }
+  select.unitsel, input.ledinput { background:#0A0F1A; border:1px solid rgba(249,115,22,.35); color:#FDE68A; }
+  select.unitsel:focus, input.ledinput:focus { outline:none; border-color:#F97316; box-shadow:0 0 0 2px rgba(249,115,22,.3); }
+  input.ledinput::placeholder { color:#57534E; }
+  .segbtn { color:#94A3B8; border:1px solid #334155; }
+  .segbtn.on { color:#0B1220; background:#F97316; border-color:#F97316; font-weight:700; }
+  .readrow { background:#0D1526; border:1px solid rgba(148,163,184,.12); }
+  .readrow:nth-child(odd) { background:#101A2E; }
+  .histrow:hover { border-color:rgba(249,115,22,.6); }
+  .badge-free { background:linear-gradient(180deg,#FBBF24,#F97316); color:#1E1B0E;
+    box-shadow:0 0 16px rgba(249,115,22,.5), inset 0 1px 0 rgba(255,255,255,.5); }
+  ::-webkit-scrollbar { width:10px; height:10px; }
+  ::-webkit-scrollbar-track { background:#0B1220; }
+  ::-webkit-scrollbar-thumb { background:#334155; border-radius:6px; }
+</style>
+</head>
+<body id="top" class="min-h-screen text-slate-200 antialiased">
+
+<!-- ======================= HEADER ======================= -->
+<header class="sticky top-0 z-50 border-b border-orange-500/30" style="background:rgba(11,18,32,.92);backdrop-filter:blur(8px)">
+  <div class="mx-auto max-w-6xl px-4 sm:px-6 py-3 flex items-center justify-between">
+    <a href="#top" class="flex items-center gap-3">
+      <span class="inline-flex h-9 w-9 items-center justify-center rounded-md bg-gradient-to-br from-orange-500 to-amber-500 font-mono font-bold text-slate-950 text-lg shadow-[0_0_14px_rgba(249,115,22,.5)]">⇄</span>
+      <span class="font-mono text-xl sm:text-2xl font-bold tracking-widest text-orange-400" style="text-shadow:0 0 12px rgba(249,115,22,.6)">UNIT<span class="text-slate-100">SHIFT</span></span>
+    </a>
+    <nav class="font-mono text-sm tracking-widest">
+      <a href="#top" class="text-slate-300 hover:text-orange-400 mr-5 transition-colors">HOME</a>
+      <a href="https://fixoraa.tech" class="text-slate-300 hover:text-orange-400 transition-colors">MORE&nbsp;TOOLS</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ======================= TOP AD ======================= -->
+<div class="no-print mx-auto max-w-6xl px-4 sm:px-6 pt-4" role="complementary" aria-label="Advertisement">
+  <div class="mx-auto text-center" style="max-width:728px">
+    <span class="block text-[10px] tracking-[0.18em] uppercase text-slate-400 mb-1.5">Advertisement</span>
+    <div class="flex justify-center overflow-hidden">
+      <div class="origin-top scale-[0.44] sm:scale-100 shrink-0">
+        <script>
+          atOptions = { 'key' : '4e68ac77881c17fe128a46565d9a4e8c', 'format' : 'iframe', 'height' : 90, 'width' : 728, 'params' : {} };
+        </script>
+        <script src="https://www.highrevenueformat.com/4e68ac77881c17fe128a46565d9a4e8c/invoke.js"></script>
+      </div>
+    </div>
+  </div>
+</div>
+
+<main class="mx-auto max-w-6xl px-4 sm:px-6 py-6">
+
+  <!-- ======================= TOOL: INSTRUMENT PANEL ======================= -->
+  <section aria-label="Unit converter tool" class="chassis relative rounded-2xl p-4 sm:p-8">
+    <span class="screw" style="top:10px;left:10px"></span>
+    <span class="screw" style="top:10px;right:10px"></span>
+    <span class="screw" style="bottom:10px;left:10px"></span>
+    <span class="screw" style="bottom:10px;right:10px"></span>
+
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+      <div>
+        <p class="engraved font-mono text-xs sm:text-sm">PRECISION UNIT CONVERTER</p>
+        <h1 class="font-mono text-2xl sm:text-4xl font-bold text-orange-400 mt-1" style="text-shadow:0 0 16px rgba(249,115,22,.5)">UnitShift Control Deck</h1>
+      </div>
+      <span class="badge-free font-mono text-xs sm:text-sm font-bold tracking-widest px-4 py-2 rounded-full">★ UNLIMITED FREE USAGE</span>
+    </div>
+
+    <!-- Category switch bank -->
+    <p class="engraved font-mono text-[11px] mb-2">▸ SELECT MEASUREMENT FAMILY</p>
+    <div id="catBank" class="grid grid-cols-4 sm:grid-cols-8 gap-2 mb-6" role="tablist" aria-label="Measurement categories"></div>
+
+    <!-- Cooking panel (only for cooking category) -->
+    <div id="cookPanel" class="hidden mb-6 led rounded-xl p-4">
+      <p class="engraved font-mono text-[11px] mb-2">▸ COOKING MODE — SELECT INGREDIENT</p>
+      <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+        <select id="ingSel" class="unitsel font-mono text-sm rounded-lg px-3 py-2.5 flex-1" aria-label="Ingredient"></select>
+        <p id="densityNote" class="font-mono text-[11px] text-amber-200/70"></p>
+      </div>
+      <p class="font-mono text-[11px] text-slate-500 mt-2">Densities are spoon-and-level kitchen references. For baking precision, always prefer a scale.</p>
+    </div>
+
+    <!-- Conversion deck -->
+    <div class="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-4 items-stretch mb-4">
+      <!-- FROM -->
+      <div class="led rounded-xl p-4">
+        <label for="fromVal" class="engraved font-mono text-[11px] block mb-2">◉ INPUT</label>
+        <input id="fromVal" type="text" inputmode="decimal" autocomplete="off" spellcheck="false"
+               class="ledinput led-text font-mono text-3xl sm:text-4xl w-full rounded-lg px-3 py-2 text-right"
+               placeholder="0" aria-label="Value to convert">
+        <select id="fromUnit" class="unitsel font-mono text-sm rounded-lg px-3 py-2.5 w-full mt-3" aria-label="From unit"></select>
+      </div>
+
+      <!-- SWAP KNOB -->
+      <div class="flex md:flex-col items-center justify-center gap-2 py-1">
+        <div class="tickring w-24 h-24 md:w-28 md:h-28 rounded-full relative flex items-center justify-center" aria-hidden="true">
+          <button id="swapBtn" class="knob w-16 h-16 md:w-20 md:h-20 rounded-full flex items-center justify-center" title="Swap units (one tap)" aria-label="Swap from and to units">
+            <span class="text-orange-300 text-2xl md:text-3xl font-bold" style="text-shadow:0 0 10px rgba(249,115,22,.8)">⇄</span>
+          </button>
+        </div>
+        <span class="font-mono text-[10px] tracking-[0.2em] text-slate-500">SWAP</span>
+      </div>
+
+      <!-- TO -->
+      <div class="led rounded-xl p-4">
+        <div class="flex items-center justify-between mb-2">
+          <span class="engraved font-mono text-[11px]">◉ OUTPUT</span>
+          <button id="copyBtn" class="pushbtn font-mono text-[11px] tracking-widest px-3 py-1 rounded-md" title="Copy result">⧉ COPY</button>
+        </div>
+        <div id="toVal" class="led-text font-mono text-3xl sm:text-4xl rounded-lg px-3 py-2 text-right overflow-x-auto whitespace-nowrap" aria-live="polite">0</div>
+        <select id="toUnit" class="unitsel font-mono text-sm rounded-lg px-3 py-2.5 w-full mt-3" aria-label="To unit"></select>
+      </div>
+    </div>
+
+    <!-- Precision + formula -->
+    <div class="flex flex-wrap items-center gap-3 mb-6">
+      <span class="engraved font-mono text-[11px]">PRECISION</span>
+      <div class="flex gap-1" role="group" aria-label="Decimal precision">
+        <button data-prec="2" class="segbtn font-mono text-xs px-3 py-1.5 rounded">2</button>
+        <button data-prec="4" class="segbtn font-mono text-xs px-3 py-1.5 rounded">4</button>
+        <button data-prec="6" class="segbtn on font-mono text-xs px-3 py-1.5 rounded">6</button>
+        <button data-prec="8" class="segbtn font-mono text-xs px-3 py-1.5 rounded">8</button>
+      </div>
+      <p id="formulaLine" class="font-mono text-xs sm:text-sm text-amber-200/80 ml-auto" aria-live="polite"></p>
+    </div>
+
+    <!-- All-units readout -->
+    <div class="mb-6">
+      <p class="engraved font-mono text-[11px] mb-2">▸ FULL INSTRUMENT READOUT — ALL UNITS</p>
+      <div id="readout" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1.5"></div>
+    </div>
+
+    <!-- History -->
+    <div>
+      <div class="flex items-center justify-between mb-2">
+        <p class="engraved font-mono text-[11px]">▸ RECENT CONVERSIONS <span class="text-slate-500">(SAVED ON THIS DEVICE)</span></p>
+        <button id="clearHist" class="pushbtn font-mono text-[11px] tracking-widest px-3 py-1 rounded-md">CLEAR</button>
+      </div>
+      <div id="history" class="space-y-1.5"></div>
+      <p id="histEmpty" class="font-mono text-xs text-slate-500 py-3 text-center border border-dashed border-slate-700 rounded-lg">No conversions yet — your recent conversions will appear here. Tap any entry to reload it.</p>
+    </div>
+  </section>
+
+  <!-- ======================= BOTTOM AD ======================= -->
+  <div class="no-print mx-auto max-w-6xl px-4 sm:px-6 pb-4 mt-8" role="complementary" aria-label="Advertisement">
+    <div class="mx-auto text-center" style="max-width:728px">
+      <span class="block text-[10px] tracking-[0.18em] uppercase text-slate-400 mb-1.5">Advertisement</span>
+      <div class="flex justify-center overflow-hidden">
+        <script async src="https://js.wpadmngr.com/static/adManager.js" data-admpid="464498"></script>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================= SEO ARTICLE ======================= -->
+  <article id="seo-article" class="mt-10 max-w-4xl mx-auto text-slate-300 leading-relaxed">
+    <h2 class="font-mono text-2xl sm:text-3xl font-bold text-slate-100 mb-4">The Complete Guide to Unit Conversion: Metric, Imperial, Data and Cooking Units</h2>
+
+    <p class="mb-4">Every day, people all over the world translate one measurement language into another. A recipe written in cups has to become grams. A hard drive advertised as one terabyte shows up as 931 gigabytes on the computer. A weather report says 95°F and you need to know whether that is dangerously hot or merely warm. Unit conversion is the quiet plumbing of modern life, and a good unit converter removes the friction in seconds.</p>
+
+    <p class="mb-4">At its core, converting a unit is simple arithmetic: multiply by a conversion factor. One mile is defined as exactly 1,609.344 meters, so ten miles is 16,093.44 meters. The difficulty is never the multiplication. It is remembering which factor applies, keeping decimal and binary data units straight, and knowing that a cup of flour and a cup of honey are not remotely the same weight. This guide walks through every family of units that UnitShift converts — length, weight, temperature, area, volume, speed, digital data, and cooking — with the facts, formulas and gotchas that search engines and textbooks often bury.</p>
+
+    <h3 class="text-xl font-bold text-slate-100 mt-8 mb-3">Why the world still uses two measurement systems</h3>
+    <p class="mb-4">The metric system, formalized in France in the 1790s and now maintained as the International System of Units (SI), is used officially by nearly every country. The United States, Liberia and Myanmar are the famous holdouts, and the UK lives in a hybrid world of miles on the road and liters at the petrol pump. Imperial and US customary units evolved organically — the foot was once literally a foot, the mile a thousand Roman paces — which is why their conversion factors look so arbitrary: 5,280 feet in a mile, 16 ounces in a pound, 4 quarts in a gallon.</p>
+    <p class="mb-4">Metric units, by contrast, scale by powers of ten. A kilometer is a thousand meters, a milligram a thousandth of a gram. That regularity is why science, medicine and international trade run on metric. But imperial units are deeply embedded in construction, aviation, cooking and everyday speech in the US, so fluent conversion between the systems is a practical skill. When in doubt, convert with a tool rather than memory: the cost of a wrong factor in engineering or medicine is far higher than the seconds it takes to check.</p>
+
+    <h3 class="text-xl font-bold text-slate-100 mt-8 mb-3">Length: the workhorse category</h3>
+    <p class="mb-4">Length conversions are the most searched of all, and the anchor conversions are worth memorizing. One inch is exactly 2.54 centimeters. One meter is about 3.28084 feet, and one kilometer is about 0.621371 miles — which is why the rough rule "multiply kilometers by 0.6 to get miles" works for quick estimates. A nautical mile, used in aviation and shipping, is defined as exactly 1,852 meters, corresponding to one minute of latitude. Precision matters here: the inch was redefined in 1959 as exactly 25.4 millimeters by international agreement, so modern length conversion is exact, not approximate.</p>
+
+    <h3 class="text-xl font-bold text-slate-100 mt-8 mb-3">Weight and mass: grams to pounds without the guesswork</h3>
+    <p class="mb-4">The pound is defined as exactly 0.45359237 kilograms, and the ounce as exactly 28.349523125 grams. The stone, still common in the UK and Ireland for body weight, is 14 pounds or about 6.35029 kilograms. One common trap: the metric tonne (1,000 kg) versus the US short ton (2,000 lb, about 907 kg) versus the long ton (2,240 lb). They differ by roughly ten percent, which matters enormously in shipping and commodities. Always confirm which "ton" a document means before converting.</p>
+
+    <h3 class="text-xl font-bold text-slate-100 mt-8 mb-3">Temperature: the only category that needs a formula, not a factor</h3>
+    <p class="mb-4">Temperature is special because the scales do not share a zero point. You cannot convert Celsius to Fahrenheit by multiplication alone; you need an offset. The formulas are: °F = °C × 9/5 + 32, and °C = (°F − 32) × 5/9. Kelvin, the SI unit, starts at absolute zero: K = °C + 273.15. A few landmarks help calibration: water freezes at 0°C (32°F, 273.15K) and boils at 100°C (212°F, 373.15K). Human body temperature is about 37°C (98.6°F). Note that below −273.15°C nothing can exist — a converter should refuse results colder than absolute zero, and UnitShift does.</p>
+
+    <h3 class="text-xl font-bold text-slate-100 mt-8 mb-3">Area and volume: squares and cubes multiply the confusion</h3>
+    <p class="mb-4">Area and volume units are the squares and cubes of length units, which means their factors grow fast. One square mile is about 2.59 square kilometers; one acre, the classic real-estate unit, is 4,046.86 square meters or about 0.4047 hectares. For volume, the US customary system is a thicket: 3 teaspoons make a tablespoon, 2 tablespoons a fluid ounce, 8 fluid ounces a cup, 2 cups a pint, 2 pints a quart, 4 quarts a gallon. A US gallon is 3.78541 liters — importantly different from the imperial gallon of 4.54609 liters still referenced in some Commonwealth contexts. When a recipe says "gallon," US sources almost always mean the US gallon, but fuel-economy figures from the UK use imperial gallons, a classic source of confusion.</p>
+
+    <h3 class="text-xl font-bold text-slate-100 mt-8 mb-3">Speed: from kilometers per hour to knots</h3>
+    <p class="mb-4">Road speeds are the everyday case: 1 mile per hour equals exactly 1.609344 kilometers per hour, and 1 kilometer per hour equals about 0.621371 mph. The meter per second is the SI unit, handy because 1 m/s equals exactly 3.6 km/h. Knots — one nautical mile per hour, or about 1.852 km/h — dominate aviation and maritime use because they tie directly to charts measured in minutes of latitude. A useful mental benchmark: 100 km/h is about 62 mph, and a typical highway cruise of 120 km/h is roughly 75 mph.</p>
+
+    <h3 class="text-xl font-bold text-slate-100 mt-8 mb-3">Digital data: the MB vs MiB problem, finally explained</h3>
+    <p class="mb-4">Data units are where most converters quietly get it wrong, because there are two competing systems. The decimal (SI) system uses powers of 1,000: 1 kilobyte (KB) = 1,000 bytes, 1 megabyte (MB) = 1,000,000 bytes, 1 gigabyte (GB) = 1,000,000,000 bytes. This is what storage manufacturers print on boxes. The binary (IEC) system uses powers of 1,024: 1 kibibyte (KiB) = 1,024 bytes, 1 mebibyte (MiB) = 1,048,576 bytes, 1 gibibyte (GiB) = 1,073,741,824 bytes. This is how operating systems and RAM actually count.</p>
+    <p class="mb-4">That mismatch is exactly why a "1 TB" hard drive shows about 931 GiB in Windows: the drive holds 1,000,000,000,000 bytes (decimal terabytes), but the OS divides by 1,073,741,824 (gibibytes). The gap widens with size — about 2.4% at kilo scale, 4.9% at mega, 7.4% at giga, 10% at tera. A converter that treats KB and KiB as the same unit will give you subtly wrong answers for RAM, disk partitions and network planning. UnitShift keeps both systems separate and labels them, so converting 16 GiB of RAM to GB gives the honest 17.18 GB rather than a hand-waved 16.</p>
+    <p class="mb-4">Bits versus bytes is the other classic trap. Network speeds are quoted in bits (100 Mbps), while file sizes are quoted in bytes (a 100 MB download). Since one byte is eight bits, a 100 Mbps connection downloads at about 12.5 MB/s in ideal conditions — not 100. Divide any "bps" figure by eight before comparing it to a file size.</p>
+
+    <h3 class="text-xl font-bold text-slate-100 mt-8 mb-3">Cooking conversions: why cups do not equal grams</h3>
+    <p class="mb-4">Volume-to-weight conversion in the kitchen depends on density, and density depends on the ingredient. One US cup is always 236.588 milliliters — that part is fixed. But a cup of all-purpose flour weighs about 120 grams, a cup of granulated sugar about 200 grams, a cup of butter about 227 grams, and a cup of honey about 340 grams. Same cup, wildly different weights, because flour is fluffy and honey is dense. This is why professional bakers weigh ingredients: volume measures space, and space includes air.</p>
+    <p class="mb-4">UnitShift's cooking mode handles this with a density table for fourteen common ingredients, from flour and sugar to oil, milk, oats, rice and salt. Pick the ingredient, enter cups, tablespoons or milliliters, and get grams — or go the other way when a European recipe gives grams and your kitchen thinks in cups. Two caveats keep you honest. First, densities vary with how you fill the cup; "spooned and leveled" flour can differ from scooped flour by 20% or more, so published values are references, not laboratory constants. Second, brown sugar is usually measured packed, which is why its cup weight (about 220 g) exceeds granulated sugar's. For bread and pastry where precision decides the outcome, a ten-dollar kitchen scale beats every converter ever built — UnitShift just makes the days without one far less painful.</p>
+
+    <h3 class="text-xl font-bold text-slate-100 mt-8 mb-3">How to get the most out of UnitShift</h3>
+    <p class="mb-4">Start by picking the measurement family on the switch bank — length, weight, temperature, area, volume, speed, data, or cooking. Type a value, choose the source and target units, and the result appears instantly on the output display. The big round knob swaps the two units with one tap, which is handy when you realize you set the conversion backwards. The precision control sets how many decimal places appear; two decimals suit money and cooking, six suit engineering homework. Below the deck, the full instrument readout shows your value in every unit of the family at once — useful when you want to see miles, feet and inches together instead of converting three times.</p>
+    <p class="mb-4">Two features deserve special mention. The cooking mode, described above, is something most general converters simply do not offer; they convert cups to milliliters and leave the grams question unanswered. And the recent-conversions history, saved privately in your own browser, lets you tap any past conversion to reload it instantly — no account, no tracking, nothing leaving your device. Everything runs locally in the page, which also means UnitShift keeps working with the numbers you have already typed even if your connection drops.</p>
+    <p class="mb-4">A final word on accuracy: UnitShift uses exact defined factors (the 1959 inch, the 1959 pound, the 1,852-meter nautical mile, the IEC binary prefixes) rather than rounded approximations, and it formats results without silently rounding the underlying value. Copy the result with the copy button when you need the full precision in a document or spreadsheet. Whether you are scaling a recipe, sizing a hard drive, checking a fever, or converting a road trip from miles to kilometers, the goal is the same: the right number, in the right unit, in under five seconds.</p>
+  </article>
+
+  <!-- ======================= FAQs ======================= -->
+  <section class="mt-12 max-w-4xl mx-auto" aria-label="Frequently asked questions">
+    <h2 class="font-mono text-2xl font-bold text-slate-100 mb-6 tracking-wide">FREQUENTLY ASKED QUESTIONS</h2>
+    <div class="space-y-3">
+      <details class="chassis rounded-xl p-4">
+        <summary class="font-mono text-sm font-bold text-orange-300 cursor-pointer">How accurate are UnitShift's conversions?</summary>
+        <p class="text-slate-300 text-sm mt-2 leading-relaxed">UnitShift uses exact internationally defined factors — the inch is exactly 25.4 mm, the pound exactly 0.45359237 kg, the nautical mile exactly 1,852 m — so linear conversions are as accurate as the definitions themselves. Temperature uses the standard offset formulas, and data conversions keep decimal (powers of 1,000) and binary (powers of 1,024) units strictly separate. Cooking weights use published spoon-and-level densities and are marked as approximate, since real ingredients vary.</p>
+      </details>
+      <details class="chassis rounded-xl p-4">
+        <summary class="font-mono text-sm font-bold text-orange-300 cursor-pointer">What is the difference between MB and MiB, or GB and GiB?</summary>
+        <p class="text-slate-300 text-sm mt-2 leading-relaxed">MB (megabyte) is decimal: 1,000,000 bytes, the system storage manufacturers use on packaging. MiB (mebibyte) is binary: 1,048,576 bytes, the system operating systems and RAM use internally. The same split applies to GB vs GiB, KB vs KiB and TB vs TiB. This is why a 1 TB drive shows about 931 GiB in your OS — both numbers describe the same 1,000,000,000,000 bytes. UnitShift lists both systems so you can convert between them correctly.</p>
+      </details>
+      <details class="chassis rounded-xl p-4">
+        <summary class="font-mono text-sm font-bold text-orange-300 cursor-pointer">Why does 1 cup of flour weigh less than 1 cup of sugar?</summary>
+        <p class="text-slate-300 text-sm mt-2 leading-relaxed">Because a cup measures volume (space), not weight — and different ingredients pack that space differently. A US cup is always 236.588 ml, but all-purpose flour weighs about 120 g per cup while granulated sugar weighs about 200 g and honey about 340 g. UnitShift's cooking mode stores a density (grams per cup) for 14 common ingredients and does the volume-to-weight math for you in both directions.</p>
+      </details>
+      <details class="chassis rounded-xl p-4">
+        <summary class="font-mono text-sm font-bold text-orange-300 cursor-pointer">How do I convert Celsius to Fahrenheit?</summary>
+        <p class="text-slate-300 text-sm mt-2 leading-relaxed">Multiply by 9/5 and add 32: °F = °C × 9/5 + 32. So 20°C is 68°F and 100°C is 212°F. To go the other way, subtract 32 and multiply by 5/9. Unlike other units, temperature needs this offset because the scales start at different zero points. Select the Temperature family in UnitShift, pick °C and °F, and the formula is applied automatically — including Kelvin, where you add or subtract 273.15.</p>
+      </details>
+      <details class="chassis rounded-xl p-4">
+        <summary class="font-mono text-sm font-bold text-orange-300 cursor-pointer">Is UnitShift really free? Do I need an account?</summary>
+        <p class="text-slate-300 text-sm mt-2 leading-relaxed">Yes — UnitShift is completely free with unlimited usage, no signup, no paywall and no watermarks. There is no account system at all. Your recent-conversions history is stored only in your own browser's local storage, and every calculation happens locally on your device.</p>
+      </details>
+      <details class="chassis rounded-xl p-4">
+        <summary class="font-mono text-sm font-bold text-orange-300 cursor-pointer">Does my conversion history leave my device?</summary>
+        <p class="text-slate-300 text-sm mt-2 leading-relaxed">No. The recent-conversions list is saved in your browser's localStorage and never sent anywhere — there is no server, no analytics endpoint and no database involved. Clearing the list with the CLEAR button, or clearing your browser's site data, removes it permanently.</p>
+      </details>
+    </div>
+  </section>
+</main>
+
+<footer class="border-t border-orange-500/20 mt-12">
+  <div class="mx-auto max-w-6xl px-4 sm:px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+    <p class="font-mono text-xs tracking-widest text-slate-500">UNITSHIFT · PRECISION UNIT CONVERTER</p>
+    <p class="font-mono text-xs text-slate-600">All conversions run locally in your browser.</p>
+  </div>
+</footer>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How accurate are UnitShift's conversions?",
+      "acceptedAnswer": { "@type": "Answer", "text": "UnitShift uses exact internationally defined factors — the inch is exactly 25.4 mm, the pound exactly 0.45359237 kg, the nautical mile exactly 1,852 m. Temperature uses standard offset formulas, data conversions keep decimal and binary units separate, and cooking weights use published spoon-and-level densities marked as approximate." }
+    },
+    {
+      "@type": "Question",
+      "name": "What is the difference between MB and MiB, or GB and GiB?",
+      "acceptedAnswer": { "@type": "Answer", "text": "MB (megabyte) is decimal: 1,000,000 bytes, used by storage manufacturers. MiB (mebibyte) is binary: 1,048,576 bytes, used by operating systems and RAM. The same split applies to GB vs GiB, KB vs KiB and TB vs TiB, which is why a 1 TB drive shows about 931 GiB in your OS." }
+    },
+    {
+      "@type": "Question",
+      "name": "Why does 1 cup of flour weigh less than 1 cup of sugar?",
+      "acceptedAnswer": { "@type": "Answer", "text": "A cup measures volume, not weight, and ingredients pack that space differently. A US cup is always 236.588 ml, but flour weighs about 120 g per cup while sugar weighs about 200 g and honey about 340 g. UnitShift's cooking mode uses a density table for 14 ingredients to convert volume to weight in both directions." }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I convert Celsius to Fahrenheit?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Multiply by 9/5 and add 32: °F = °C × 9/5 + 32. To go the other way, subtract 32 and multiply by 5/9. For Kelvin, add or subtract 273.15." }
+    },
+    {
+      "@type": "Question",
+      "name": "Is UnitShift really free? Do I need an account?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes. UnitShift is completely free with unlimited usage, no signup, no paywall and no watermarks. There is no account system; history is stored only in your browser's local storage." }
+    },
+    {
+      "@type": "Question",
+      "name": "Does my conversion history leave my device?",
+      "acceptedAnswer": { "@type": "Answer", "text": "No. The recent-conversions list is saved in your browser's localStorage and never sent anywhere. The CLEAR button or clearing browser site data removes it permanently." }
+    }
+  ]
+}
+</script>
+
+<script>
+/* UnitShift core conversion logic — pure functions.
+   Used both in the browser (inlined into unitshift.html) and in Node tests.
+   All linear categories convert via a base unit: value -> base -> target. */
+'use strict';
+
+/* ------------------------------ unit data ------------------------------ */
+var UNITSHIFT_DATA = {
+  categories: {
+    length: {
+      label: 'Length', base: 'm',
+      units: {
+        mm:  { label: 'Millimeter', symbol: 'mm', toBase: 0.001 },
+        cm:  { label: 'Centimeter', symbol: 'cm', toBase: 0.01 },
+        m:   { label: 'Meter', symbol: 'm', toBase: 1 },
+        km:  { label: 'Kilometer', symbol: 'km', toBase: 1000 },
+        'in':{ label: 'Inch', symbol: 'in', toBase: 0.0254 },
+        ft:  { label: 'Foot', symbol: 'ft', toBase: 0.3048 },
+        yd:  { label: 'Yard', symbol: 'yd', toBase: 0.9144 },
+        mi:  { label: 'Mile', symbol: 'mi', toBase: 1609.344 },
+        nmi: { label: 'Nautical mile', symbol: 'nmi', toBase: 1852 }
+      },
+      defaults: ['km', 'mi']
+    },
+    weight: {
+      label: 'Weight', base: 'g',
+      units: {
+        mg: { label: 'Milligram', symbol: 'mg', toBase: 0.001 },
+        g:  { label: 'Gram', symbol: 'g', toBase: 1 },
+        kg: { label: 'Kilogram', symbol: 'kg', toBase: 1000 },
+        t:  { label: 'Metric tonne', symbol: 't', toBase: 1000000 },
+        oz: { label: 'Ounce', symbol: 'oz', toBase: 28.349523125 },
+        lb: { label: 'Pound', symbol: 'lb', toBase: 453.59237 },
+        st: { label: 'Stone', symbol: 'st', toBase: 6350.29318 }
+      },
+      defaults: ['kg', 'lb']
+    },
+    temperature: {
+      label: 'Temperature', base: '°C',
+      special: 'temp',
+      units: {
+        C: { label: 'Celsius', symbol: '°C' },
+        F: { label: 'Fahrenheit', symbol: '°F' },
+        K: { label: 'Kelvin', symbol: 'K' }
+      },
+      defaults: ['C', 'F']
+    },
+    area: {
+      label: 'Area', base: 'm²',
+      units: {
+        'cm²': { label: 'Square centimeter', symbol: 'cm²', toBase: 0.0001 },
+        'm²':  { label: 'Square meter', symbol: 'm²', toBase: 1 },
+        'km²': { label: 'Square kilometer', symbol: 'km²', toBase: 1000000 },
+        'ft²': { label: 'Square foot', symbol: 'ft²', toBase: 0.09290304 },
+        'yd²': { label: 'Square yard', symbol: 'yd²', toBase: 0.83612736 },
+        acre:  { label: 'Acre', symbol: 'acre', toBase: 4046.8564224 },
+        ha:    { label: 'Hectare', symbol: 'ha', toBase: 10000 },
+        'mi²': { label: 'Square mile', symbol: 'mi²', toBase: 2589988.110336 }
+      },
+      defaults: ['m²', 'ft²']
+    },
+    volume: {
+      label: 'Volume', base: 'L',
+      units: {
+        ml:    { label: 'Milliliter', symbol: 'ml', toBase: 0.001 },
+        L:     { label: 'Liter', symbol: 'L', toBase: 1 },
+        'm³':  { label: 'Cubic meter', symbol: 'm³', toBase: 1000 },
+        tsp:   { label: 'Teaspoon (US)', symbol: 'tsp', toBase: 0.00492892159375 },
+        tbsp:  { label: 'Tablespoon (US)', symbol: 'tbsp', toBase: 0.01478676478125 },
+        'fl oz':{ label: 'Fluid ounce (US)', symbol: 'fl oz', toBase: 0.0295735295625 },
+        cup:   { label: 'Cup (US)', symbol: 'cup', toBase: 0.2365882365 },
+        pt:    { label: 'Pint (US)', symbol: 'pt', toBase: 0.473176473 },
+        qt:    { label: 'Quart (US)', symbol: 'qt', toBase: 0.946352946 },
+        gal:   { label: 'Gallon (US)', symbol: 'gal', toBase: 3.785411784 }
+      },
+      defaults: ['L', 'gal']
+    },
+    speed: {
+      label: 'Speed', base: 'm/s',
+      units: {
+        'm/s':  { label: 'Meter per second', symbol: 'm/s', toBase: 1 },
+        'km/h': { label: 'Kilometer per hour', symbol: 'km/h', toBase: 1 / 3.6 },
+        mph:    { label: 'Mile per hour', symbol: 'mph', toBase: 0.44704 },
+        'ft/s': { label: 'Foot per second', symbol: 'ft/s', toBase: 0.3048 },
+        knot:   { label: 'Knot', symbol: 'kn', toBase: 0.5144444444444445 }
+      },
+      defaults: ['km/h', 'mph']
+    },
+    data: {
+      label: 'Data', base: 'B',
+      units: {
+        bit: { label: 'Bit', symbol: 'bit', toBase: 0.125 },
+        B:   { label: 'Byte', symbol: 'B', toBase: 1 },
+        KB:  { label: 'Kilobyte (decimal)', symbol: 'KB', toBase: 1000 },
+        MB:  { label: 'Megabyte (decimal)', symbol: 'MB', toBase: 1000000 },
+        GB:  { label: 'Gigabyte (decimal)', symbol: 'GB', toBase: 1000000000 },
+        TB:  { label: 'Terabyte (decimal)', symbol: 'TB', toBase: 1000000000000 },
+        PB:  { label: 'Petabyte (decimal)', symbol: 'PB', toBase: 1000000000000000 },
+        KiB: { label: 'Kibibyte (binary)', symbol: 'KiB', toBase: 1024 },
+        MiB: { label: 'Mebibyte (binary)', symbol: 'MiB', toBase: 1048576 },
+        GiB: { label: 'Gibibyte (binary)', symbol: 'GiB', toBase: 1073741824 },
+        TiB: { label: 'Tebibyte (binary)', symbol: 'TiB', toBase: 1099511627776 }
+      },
+      defaults: ['GB', 'GiB']
+    },
+    cooking: {
+      label: 'Cooking', base: 'g',
+      special: 'cooking',
+      /* weight units in grams-equivalent + volume units converted via cups */
+      units: {
+        g:      { label: 'Gram', symbol: 'g', toBase: 1 },
+        kg:     { label: 'Kilogram', symbol: 'kg', toBase: 1000 },
+        oz:     { label: 'Ounce', symbol: 'oz', toBase: 28.349523125 },
+        lb:     { label: 'Pound', symbol: 'lb', toBase: 453.59237 },
+        cup:    { label: 'Cup', symbol: 'cup', kind: 'volume', cups: 1 },
+        tbsp:   { label: 'Tablespoon', symbol: 'tbsp', kind: 'volume', cups: 1 / 16 },
+        tsp:    { label: 'Teaspoon', symbol: 'tsp', kind: 'volume', cups: 1 / 48 },
+        'fl oz':{ label: 'Fluid ounce', symbol: 'fl oz', kind: 'volume', cups: 1 / 8 },
+        ml:     { label: 'Milliliter', symbol: 'ml', kind: 'volume', cups: 1 / 236.5882365 }
+      },
+      defaults: ['cup', 'g']
+    }
+  },
+
+  /* grams per US cup, spoon-and-level, widely published kitchen references */
+  ingredients: {
+    'ap-flour':   { label: 'All-purpose flour', gPerCup: 120 },
+    'ww-flour':   { label: 'Whole wheat flour', gPerCup: 113 },
+    'gran-sugar': { label: 'Granulated sugar', gPerCup: 200 },
+    'brown-sugar':{ label: 'Brown sugar (packed)', gPerCup: 220 },
+    'powd-sugar': { label: 'Powdered / icing sugar', gPerCup: 120 },
+    butter:       { label: 'Butter', gPerCup: 227 },
+    cocoa:        { label: 'Cocoa powder', gPerCup: 100 },
+    oats:         { label: 'Rolled oats', gPerCup: 90 },
+    rice:         { label: 'Rice (uncooked)', gPerCup: 185 },
+    milk:         { label: 'Milk', gPerCup: 240 },
+    water:        { label: 'Water', gPerCup: 236.5882365 },
+    oil:          { label: 'Vegetable oil', gPerCup: 224 },
+    honey:        { label: 'Honey', gPerCup: 340 },
+    salt:         { label: 'Table salt', gPerCup: 288 }
+  }
+};
+
+/* ------------------------------ converters ----------------------------- */
+
+function usTempToCelsius(v, u) {
+  if (u === 'C') return v;
+  if (u === 'F') return (v - 32) * 5 / 9;
+  if (u === 'K') return v - 273.15;
+  return NaN;
+}
+
+function usCelsiusToTemp(c, u) {
+  if (u === 'C') return c;
+  if (u === 'F') return c * 9 / 5 + 32;
+  if (u === 'K') return c + 273.15;
+  return NaN;
+}
+
+/* General conversion. Returns a number, or null for unknown category/unit. */
+function usConvert(value, categoryKey, fromUnit, toUnit) {
+  var cat = UNITSHIFT_DATA.categories[categoryKey];
+  if (!cat) return null;
+  var from = cat.units[fromUnit];
+  var to = cat.units[toUnit];
+  if (!from || !to) return null;
+  if (typeof value !== 'number' || !isFinite(value)) return null;
+
+  if (cat.special === 'temp') {
+    var c = usTempToCelsius(value, fromUnit);
+    if (!isFinite(c)) return null;
+    if (toUnit === 'K' && c < -273.15 - 1e-9) return null; /* below absolute zero */
+    return usCelsiusToTemp(c, toUnit);
+  }
+  if (cat.special === 'cooking') return null; /* cooking needs an ingredient */
+  if (typeof from.toBase !== 'number' || typeof to.toBase !== 'number') return null;
+  var inBase = value * from.toBase;
+  return inBase / to.toBase;
+}
+
+/* Cooking conversion: uses ingredient density (grams per cup).
+   Returns number, or null for bad inputs / unknown unit / ingredient. */
+function usCookConvert(value, fromUnit, toUnit, ingredientKey) {
+  var cat = UNITSHIFT_DATA.categories.cooking;
+  var ing = UNITSHIFT_DATA.ingredients[ingredientKey];
+  var from = cat.units[fromUnit];
+  var to = cat.units[toUnit];
+  if (!ing || !from || !to) return null;
+  if (typeof value !== 'number' || !isFinite(value)) return null;
+  var gpc = ing.gPerCup;
+
+  function toGrams(v, u) {
+    if (u.kind === 'volume') return v * u.cups * gpc;  /* volume -> cups -> grams */
+    return v * u.toBase;
+  }
+  function fromGrams(g, u) {
+    if (u.kind === 'volume') return g / (u.cups * gpc);
+    return g / u.toBase;
+  }
+  return fromGrams(toGrams(value, from), to);
+}
+
+/* Convert a value into EVERY unit of a category. Returns array of
+   {key, label, symbol, value} in unit order. */
+function usConvertAll(value, categoryKey, fromUnit, ingredientKey) {
+  var cat = UNITSHIFT_DATA.categories[categoryKey];
+  if (!cat || typeof value !== 'number' || !isFinite(value)) return [];
+  var out = [];
+  var keys = Object.keys(cat.units);
+  for (var i = 0; i < keys.length; i++) {
+    var k = keys[i];
+    var v = (categoryKey === 'cooking')
+      ? usCookConvert(value, fromUnit, k, ingredientKey)
+      : usConvert(value, categoryKey, fromUnit, k);
+    out.push({ key: k, label: cat.units[k].label, symbol: cat.units[k].symbol, value: v });
+  }
+  return out;
+}
+
+/* Parse user input: trims, strips thousands separators, allows decimals. */
+function usParseInput(raw) {
+  if (raw === null || raw === undefined) return null;
+  var s = String(raw).trim().replace(/,/g, '');
+  if (s === '' || s === '.' || s === '-' || s === '+') return null;
+  if (!/^[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?$/.test(s)) return null;
+  var v = parseFloat(s);
+  return isFinite(v) ? v : null;
+}
+
+/* Display formatting: fixed decimals (trimmed), exponential for extremes. */
+function usFormat(value, decimals) {
+  if (typeof value !== 'number' || !isFinite(value)) return '—';
+  if (value === 0) return '0';
+  var d = (decimals === undefined) ? 6 : decimals;
+  var abs = Math.abs(value);
+  if (abs >= 1e12 || abs < 1e-6) {
+    return value.toExponential(4).replace(/(\.\d*?)0+e/, '$1e').replace(/\.e/, 'e');
+  }
+  var s = value.toFixed(d);
+  s = s.replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '');
+  if (s === '-0') s = '0';
+  return s;
+}
+
+/* One-line formula string, e.g. "1 mi = 1.609344 km". */
+function usFormulaText(categoryKey, fromUnit, toUnit, ingredientKey) {
+  var cat = UNITSHIFT_DATA.categories[categoryKey];
+  if (!cat) return '';
+  var from = cat.units[fromUnit], to = cat.units[toUnit];
+  if (!from || !to) return '';
+  var one = (categoryKey === 'cooking')
+    ? usCookConvert(1, fromUnit, toUnit, ingredientKey)
+    : usConvert(1, categoryKey, fromUnit, toUnit);
+  if (one === null) return '';
+  var extra = (categoryKey === 'cooking' && ingredientKey)
+    ? ' (' + UNITSHIFT_DATA.ingredients[ingredientKey].label + ', ' +
+      UNITSHIFT_DATA.ingredients[ingredientKey].gPerCup + ' g/cup)'
+    : '';
+  return '1 ' + from.symbol + ' = ' + usFormat(one, 6) + ' ' + to.symbol + extra;
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    UNITSHIFT_DATA: UNITSHIFT_DATA,
+    usConvert: usConvert,
+    usCookConvert: usCookConvert,
+    usConvertAll: usConvertAll,
+    usParseInput: usParseInput,
+    usFormat: usFormat,
+    usFormulaText: usFormulaText,
+    usTempToCelsius: usTempToCelsius,
+    usCelsiusToTemp: usCelsiusToTemp
+  };
+}
+
+</script>
+
+<script>
+(function () {
+  'use strict';
+  var DATA = UNITSHIFT_DATA;
+  var state = { category: 'length', fromUnit: 'km', toUnit: 'mi', precision: 6, ingredient: 'ap-flour' };
+  var HIST_KEY = 'unitshift-history-v1';
+  var histTimer = null;
+
+  var $ = function (id) { return document.getElementById(id); };
+  var catBank = $('catBank'), fromVal = $('fromVal'), fromUnit = $('fromUnit'), toUnit = $('toUnit'),
+      toVal = $('toVal'), readout = $('readout'), formulaLine = $('formulaLine'),
+      historyEl = $('history'), histEmpty = $('histEmpty'),
+      cookPanel = $('cookPanel'), ingSel = $('ingSel'), densityNote = $('densityNote');
+
+  /* ---------- category bank ---------- */
+  var catIcons = { length: '📏', weight: '⚖️', temperature: '🌡️', area: '◧', volume: '🧪', speed: '🚀', data: '💾', cooking: '🍳' };
+  function buildCatBank() {
+    catBank.innerHTML = '';
+    Object.keys(DATA.categories).forEach(function (key) {
+      var b = document.createElement('button');
+      b.className = 'pushbtn rounded-lg px-1 py-2.5 flex flex-col items-center gap-1' + (key === state.category ? ' on' : '');
+      b.setAttribute('role', 'tab');
+      b.setAttribute('aria-selected', key === state.category ? 'true' : 'false');
+      b.innerHTML = '<span class="text-lg">' + (catIcons[key] || '◉') + '</span>' +
+        '<span class="font-mono text-[9px] sm:text-[10px] tracking-widest">' + DATA.categories[key].label.toUpperCase() + '</span>' +
+        '<span class="dot"></span>';
+      b.addEventListener('click', function () { setCategory(key); });
+      b.dataset.cat = key;
+      catBank.appendChild(b);
+    });
+  }
+
+  /* ---------- ingredient selector ---------- */
+  function buildIngredients() {
+    ingSel.innerHTML = '';
+    Object.keys(DATA.ingredients).forEach(function (key) {
+      var o = document.createElement('option');
+      o.value = key;
+      o.textContent = DATA.ingredients[key].label + ' — ' + DATA.ingredients[key].gPerCup + ' g/cup';
+      ingSel.appendChild(o);
+    });
+    ingSel.value = state.ingredient;
+    updateDensityNote();
+  }
+  function updateDensityNote() {
+    var ing = DATA.ingredients[state.ingredient];
+    densityNote.textContent = ing ? ('1 cup ' + ing.label.toLowerCase() + ' ≈ ' + ing.gPerCup + ' g') : '';
+  }
+
+  /* ---------- unit selects ---------- */
+  function fillUnitSelect(sel, keep) {
+    var cat = DATA.categories[state.category];
+    sel.innerHTML = '';
+    Object.keys(cat.units).forEach(function (key) {
+      var o = document.createElement('option');
+      o.value = key;
+      o.textContent = cat.units[key].label + ' (' + cat.units[key].symbol + ')';
+      sel.appendChild(o);
+    });
+    if (keep && cat.units[keep]) sel.value = keep;
+  }
+
+  function setCategory(key) {
+    state.category = key;
+    var cat = DATA.categories[key];
+    state.fromUnit = cat.defaults[0];
+    state.toUnit = cat.defaults[1];
+    Array.prototype.forEach.call(catBank.children, function (b) {
+      var on = b.dataset.cat === key;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    fillUnitSelect(fromUnit, state.fromUnit);
+    fillUnitSelect(toUnit, state.toUnit);
+    cookPanel.classList.toggle('hidden', key !== 'cooking');
+    recalc();
+  }
+
+  /* ---------- conversion ---------- */
+  function currentValue() {
+    var v = usParseInput(fromVal.value);
+    return v;
+  }
+
+  function recalc() {
+    var v = currentValue();
+    var cat = DATA.categories[state.category];
+    var result;
+    if (v === null) {
+      toVal.textContent = '—';
+      formulaLine.textContent = 'Enter a number to convert';
+      renderReadout([]);
+      return;
+    }
+    if (state.category === 'cooking') {
+      result = usCookConvert(v, state.fromUnit, state.toUnit, state.ingredient);
+    } else {
+      result = usConvert(v, state.category, state.fromUnit, state.toUnit);
+    }
+    if (result === null || !isFinite(result)) {
+      toVal.textContent = '—';
+      formulaLine.textContent = 'Conversion not possible (check units / temperature range)';
+      renderReadout([]);
+      return;
+    }
+    toVal.textContent = usFormat(result, state.precision);
+    formulaLine.textContent = usFormulaText(state.category, state.fromUnit, state.toUnit,
+      state.category === 'cooking' ? state.ingredient : null);
+    renderReadout(usConvertAll(v, state.category, state.fromUnit,
+      state.category === 'cooking' ? state.ingredient : null));
+    queueHistory(v, result);
+  }
+
+  function renderReadout(rows) {
+    readout.innerHTML = '';
+    if (!rows.length) {
+      readout.innerHTML = '<p class="font-mono text-xs text-slate-500 col-span-full py-2">Enter a value to light up the readout.</p>';
+      return;
+    }
+    rows.forEach(function (r) {
+      var div = document.createElement('div');
+      div.className = 'readrow rounded-md px-3 py-1.5 flex items-center justify-between gap-2';
+      var val = (r.value === null || !isFinite(r.value)) ? '—' : usFormat(r.value, state.precision);
+      var hl = (r.key === state.toUnit) ? ' style="border-color:rgba(249,115,22,.6)"' : '';
+      div.innerHTML = '<span class="font-mono text-[11px] text-slate-400">' + escapeHtml(r.label) + '</span>' +
+        '<span class="led-text font-mono text-sm whitespace-nowrap"' + hl + '>' + escapeHtml(val) + ' ' + escapeHtml(r.symbol) + '</span>';
+      if (r.key === state.toUnit) div.style.borderColor = 'rgba(249,115,22,.6)';
+      readout.appendChild(div);
+    });
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  /* ---------- swap / copy / precision ---------- */
+  $('swapBtn').addEventListener('click', function () {
+    var t = state.fromUnit;
+    state.fromUnit = state.toUnit;
+    state.toUnit = t;
+    fromUnit.value = state.fromUnit;
+    toUnit.value = state.toUnit;
+    recalc();
+  });
+
+  $('copyBtn').addEventListener('click', function () {
+    var txt = toVal.textContent.trim();
+    if (!txt || txt === '—') return;
+    var cat = DATA.categories[state.category];
+    var full = txt + ' ' + cat.units[state.toUnit].symbol;
+    function done() {
+      var btn = $('copyBtn');
+      var old = btn.textContent;
+      btn.textContent = '✓ COPIED';
+      setTimeout(function () { btn.textContent = old; }, 1200);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(full).then(done, done);
+    } else {
+      var ta = document.createElement('textarea');
+      ta.value = full;
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } catch (e) {}
+      document.body.removeChild(ta);
+      done();
+    }
+  });
+
+  Array.prototype.forEach.call(document.querySelectorAll('[data-prec]'), function (b) {
+    b.addEventListener('click', function () {
+      state.precision = parseInt(b.dataset.prec, 10);
+      Array.prototype.forEach.call(document.querySelectorAll('[data-prec]'), function (x) {
+        x.classList.toggle('on', x === b);
+      });
+      recalc();
+    });
+  });
+
+  /* ---------- history ---------- */
+  function loadHistory() {
+    try {
+      var raw = localStorage.getItem(HIST_KEY);
+      var arr = raw ? JSON.parse(raw) : [];
+      return Array.isArray(arr) ? arr : [];
+    } catch (e) { return []; }
+  }
+  function saveHistory(arr) {
+    try { localStorage.setItem(HIST_KEY, JSON.stringify(arr.slice(0, 12))); } catch (e) {}
+  }
+  function queueHistory(v, result) {
+    clearTimeout(histTimer);
+    histTimer = setTimeout(function () { pushHistory(v, result); }, 1200);
+  }
+  function pushHistory(v, result) {
+    var cat = DATA.categories[state.category];
+    var entry = {
+      t: Date.now(), cat: state.category,
+      fromVal: v, fromUnit: state.fromUnit, toUnit: state.toUnit,
+      result: result, precision: state.precision,
+      ingredient: state.category === 'cooking' ? state.ingredient : null,
+      label: usFormat(v, state.precision) + ' ' + cat.units[state.fromUnit].symbol +
+             ' → ' + usFormat(result, state.precision) + ' ' + cat.units[state.toUnit].symbol
+    };
+    var h = loadHistory();
+    /* avoid logging the exact same conversion twice in a row */
+    if (h.length && h[0].label === entry.label && h[0].cat === entry.cat) { renderHistory(); return; }
+    h.unshift(entry);
+    saveHistory(h);
+    renderHistory();
+  }
+  function renderHistory() {
+    var h = loadHistory();
+    historyEl.innerHTML = '';
+    histEmpty.style.display = h.length ? 'none' : 'block';
+    h.forEach(function (e) {
+      var div = document.createElement('div');
+      div.className = 'histrow readrow rounded-md px-3 py-2 flex items-center justify-between gap-2 cursor-pointer';
+      div.title = 'Tap to reload this conversion';
+      var when = new Date(e.t);
+      var time = when.toLocaleDateString() + ' ' + when.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      var catLabel = DATA.categories[e.cat] ? DATA.categories[e.cat].label : e.cat;
+      div.innerHTML = '<span class="font-mono text-xs text-amber-100/90">' + escapeHtml(e.label) + '</span>' +
+        '<span class="font-mono text-[10px] text-slate-500 whitespace-nowrap">' + escapeHtml(catLabel.toUpperCase()) + ' · ' + escapeHtml(time) + '</span>';
+      div.addEventListener('click', function () { replay(e); });
+      historyEl.appendChild(div);
+    });
+  }
+  function replay(e) {
+    if (!DATA.categories[e.cat]) return;
+    setCategory(e.cat);
+    state.fromUnit = e.fromUnit;
+    state.toUnit = e.toUnit;
+    fromUnit.value = state.fromUnit;
+    toUnit.value = state.toUnit;
+    if (e.ingredient && DATA.ingredients[e.ingredient]) {
+      state.ingredient = e.ingredient;
+      ingSel.value = e.ingredient;
+      updateDensityNote();
+    }
+    fromVal.value = String(e.fromVal);
+    recalc();
+    fromVal.focus();
+  }
+  $('clearHist').addEventListener('click', function () {
+    saveHistory([]);
+    renderHistory();
+  });
+
+  /* ---------- wiring ---------- */
+  fromVal.addEventListener('input', recalc);
+  fromUnit.addEventListener('change', function () { state.fromUnit = fromUnit.value; recalc(); });
+  toUnit.addEventListener('change', function () { state.toUnit = toUnit.value; recalc(); });
+  ingSel.addEventListener('change', function () { state.ingredient = ingSel.value; updateDensityNote(); recalc(); });
+
+  buildCatBank();
+  buildIngredients();
+  setCategory('length');
+  renderHistory();
+})();
+</script>
+</body>
+</html>
